@@ -4,44 +4,153 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Yeepsploit</title>
+    <!-- Supabase JS CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
     <div id="app">
-        <h1 style="color: white; text-align: center; line-height: 51px;">Yeepsploit</h1>
-
+        <h1>Yeepsploit</h1>
     </div>
-    
-    <div id="s">
-        <a href="www.yeeps.com" id="s">Original Website</a>
-        <a download="YeepsploitSetup.exe" id="s" href="YeepsploitSetup.exe">YeepsploitSetup.exe</a>
-        <a href="https://github.com/atticbuilderVR/Yeepsploit" id="s">GitHub Repository</a>
-        <a href="https://discord.gg/yeeps" id="s">Yeeps Discord Server</a>
-        <a href="https://www.youtube.com/@Im-Skeptical" id="s">Youtube</a>    </div>
-</body>
-</html>
-<style>
-    
 
+    <div id="links">
+        <a href="https://www.yeeps.com" target="_blank">Original Website</a>
+        <a download="YeepsploitSetup.exe" href="YeepsploitSetup.exe">YeepsploitSetup.exe</a>
+        <a href="https://github.com/atticbuilderVR/Yeepsploit" target="_blank">GitHub Repository</a>
+        <a href="https://discord.gg/yeeps" target="_blank">Yeeps Discord Server</a>
+        <a href="https://www.youtube.com/@Im-Skeptical" target="_blank">YouTube</a>
+    </div>
+
+    <!-- Wiki Section -->
+    <div id="wiki">
+        <h2>Yeepsploit Wiki</h2>
+
+        <div id="wiki-list">Loading wiki...</div>
+
+        <h3>Add / Edit Wiki Page</h3>
+        <input id="wiki-title" placeholder="Page title" />
+        <textarea id="wiki-content" placeholder="Wiki content"></textarea>
+        <button onclick="saveWiki()">Save</button>
+    </div>
+
+<script>
+    // 🔴 REPLACE THESE WITH YOUR SUPABASE PROJECT DETAILS
+    const SUPABASE_URL = "https://tbxtkkljtpjvudmamtoj.supabase.co";
+    const SUPABASE_ANON_KEY = "YOUR_PUBLIC_ANON_KEY";
+
+    const supabase = window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_ANON_KEY
+    );
+
+    async function loadWiki() {
+        const { data, error } = await supabase
+            .from('wiki')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        const list = document.getElementById('wiki-list');
+        list.innerHTML = '';
+
+        if (error) {
+            list.textContent = 'Failed to load wiki';
+            return;
+        }
+
+        if (!data.length) {
+            list.textContent = 'No wiki pages yet.';
+            return;
+        }
+
+        data.forEach(page => {
+            const div = document.createElement('div');
+            div.className = 'wiki-page';
+            div.innerHTML = `<h4>${page.title}</h4><p>${page.content}</p>`;
+            list.appendChild(div);
+        });
+    }
+
+    async function saveWiki() {
+        const title = document.getElementById('wiki-title').value.trim();
+        const content = document.getElementById('wiki-content').value.trim();
+
+        if (!title || !content) return alert('Title and content required');
+
+        const { error } = await supabase
+            .from('wiki')
+            .insert([{ title, content }]);
+
+        if (error) {
+            alert('Error saving wiki');
+        } else {
+            document.getElementById('wiki-title').value = '';
+            document.getElementById('wiki-content').value = '';
+            loadWiki();
+        }
+    }
+
+    loadWiki();
+</script>
+
+<style>
     body {
         margin: 0;
-        background-color: #f4f4f4;
+        background-color: #111;
+        color: white;
+        font-family: Arial, sans-serif;
     }
 
     #app {
-        width: 81vw;
-        height: 51px;
-        justify-content: center;
-        position: relative;
-        top: 10px;
-        left: 100px;
+        width: 100%;
+        height: 60px;
         background-color: black;
+        display: flex;
+        align-items: center;
+        justify-content: center;
     }
-    #s {
-        position: relative;
-        top: 100px;
-        column-gap: 20px;
 
-        width: 300px;
-        height: 0px;
-        background-color: navajowhite
+    #links {
+        margin: 30px;
+        display: flex;
+        gap: 15px;
+        flex-wrap: wrap;
     }
+
+    #links a {
+        color: #00ffd5;
+        text-decoration: none;
+    }
+
+    #wiki {
+        margin: 30px;
+        padding: 20px;
+        background: #1b1b1b;
+        border-radius: 8px;
+    }
+
+    #wiki textarea {
+        width: 100%;
+        height: 120px;
+        margin-top: 10px;
+    }
+
+    #wiki input {
+        width: 100%;
+        padding: 8px;
+        margin-top: 10px;
+    }
+
+    button {
+        margin-top: 10px;
+        padding: 10px;
+        cursor: pointer;
+    }
+
+    .wiki-page {
+        margin-bottom: 20px;
+        border-bottom: 1px solid #333;
+        padding-bottom: 10px;
+    }
+</style>
+</body>
+</html>
+
